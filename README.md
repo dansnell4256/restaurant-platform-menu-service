@@ -51,7 +51,9 @@ pytest --cov=src --cov-report=html
 
 # Run specific test markers
 pytest -m unit          # Unit tests only
+pytest -m component     # Component tests only
 pytest -m integration   # Integration tests only
+pytest -m e2e           # E2E tests only
 
 # Run linting and formatting
 pre-commit run --all-files              # Run on all files
@@ -78,9 +80,10 @@ src/
 └── infrastructure/ # AWS CDK infrastructure
 
 tests/
-├── unit/           # Fast isolated tests
-├── integration/    # Tests with mocked AWS services
-└── e2e/           # End-to-end API tests
+├── unit/           # Pure logic, no dependencies
+├── component/      # Components with mocked deps
+├── integration/    # Real AWS services
+└── e2e/            # Full user journeys
 ```
 
 ## Development Workflow

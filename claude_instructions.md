@@ -116,9 +116,10 @@ src/
 └── infrastructure/ # CDK infrastructure code
 
 tests/
-├── unit/           # Fast isolated tests
-├── integration/    # Tests with real AWS services (mocked)
-└── e2e/           # End-to-end API tests
+├── unit/           # Pure logic, no dependencies (MenuItem validation)
+├── component/      # Complete components with mocked deps (Repository + moto)
+├── integration/    # Real AWS services or multiple services together
+└── e2e/            # Full user journeys through the entire system
 ```
 
 ### Getting Started Checklist

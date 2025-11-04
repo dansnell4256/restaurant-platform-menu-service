@@ -45,9 +45,10 @@ addopts = [
     "--cov-fail-under=80",
 ]
 markers = [
-    "unit: Unit tests that don't require external services",
-    "integration: Integration tests with mocked AWS services",
-    "e2e: End-to-end tests with full service stack",
+    "unit: Unit tests - pure logic, no dependencies",
+    "component: Component tests - complete components with mocked dependencies",
+    "integration: Integration tests - real AWS services or multiple services",
+    "e2e: End-to-end tests - full user journeys through the system",
 ]
 
 [tool.black]
