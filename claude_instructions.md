@@ -24,7 +24,7 @@
 ### Repository Convention
 - **Name**: `restaurant-platform-menu-service`
 - **Service ID**: `menu-svc` (for logging/tracing)
-- **Branch Strategy**: 
+- **Branch Strategy**:
   - `main` - single source of truth, always deployable
   - `feature/{ticket-id}-{brief-description}` - short-lived only
   - No long-running branches (no develop, staging branches)
@@ -46,12 +46,12 @@ This menu service is responsible for:
 - **Admin API**: REST endpoints for restaurant admin frontend
 
 ### Key Data Models (DynamoDB Design)
-- **Menu Items Table**: 
+- **Menu Items Table**:
   - Partition Key: `restaurant_id`
   - Sort Key: `item_id`
   - Attributes: name, description, price, category, availability, allergens
 - **Categories Table**:
-  - Partition Key: `restaurant_id` 
+  - Partition Key: `restaurant_id`
   - Sort Key: `category_id`
   - Attributes: name, display_order, parent_category
 
@@ -69,7 +69,7 @@ GET    /health                                # Health check endpoint
 
 ### Integration with Platform
 - **Publishes Events**: Menu item changes → EventBridge → Aggregation Service
-- **Consumed By**: 
+- **Consumed By**:
   - `restaurant-platform-aggregation-service` (menu formatting)
   - `restaurant-platform-admin-web` (restaurant management UI)
   - External platform adapters (DoorDash, GrubHub)
@@ -83,13 +83,13 @@ GET    /health                                # Health check endpoint
 
 ### Deployment Strategy
 - **DEV Environment**: Auto-deploy on every commit to main
-- **STAGING Environment**: Auto-deploy after successful DEV deployment  
+- **STAGING Environment**: Auto-deploy after successful DEV deployment
 - **PROD Environment**: Manual approval required via GitHub Environments
 - **Rollback Strategy**: Blue/green deployments with CloudWatch alarms
 
 ### Observability Requirements
 - **Service Identification**: All logs/traces tagged with `service=menu-svc`
-- **Custom Metrics**: 
+- **Custom Metrics**:
   - Menu item creation/update/delete rates
   - API response times by endpoint
   - Error rates by operation type
@@ -122,12 +122,14 @@ tests/
 ```
 
 ### Getting Started Checklist
-- [ ] Set up Python project structure with pyproject.toml
-- [ ] Configure pytest with coverage and testing markers
-- [ ] Set up pre-commit hooks for code quality
+- [x] Set up Python project structure with pyproject.toml
+- [x] Configure pytest with coverage and testing markers
+- [x] Set up pre-commit hooks for code quality
 - [ ] Create basic MenuItem model with tests (TDD)
 - [ ] Implement DynamoDB repository pattern with moto mocking
 - [ ] Add OpenTelemetry instrumentation from first function
 - [ ] Create GitHub Actions CI pipeline
+
+**Dependency Management Note**: This project uses `pyproject.toml` (PEP 621) for dependency management - the modern Python standard. No `requirements.txt` files are needed. Install dependencies using `pip install -e ".[dev]"` within a virtual environment.
 
 **Remember**: Start with the smallest possible piece (like a MenuItem model) and build incrementally. Write the test first to explain what you're building, then implement just enough to make it pass.
