@@ -125,7 +125,7 @@ tests/
 - [x] Set up Python project structure with pyproject.toml
 - [x] Configure pytest with coverage and testing markers
 - [x] Set up pre-commit hooks for code quality
-- [ ] Create basic MenuItem model with tests (TDD)
+- [x] Create basic MenuItem model with tests (TDD)
 - [ ] Implement DynamoDB repository pattern with moto mocking
 - [ ] Add OpenTelemetry instrumentation from first function
 - [ ] Create GitHub Actions CI pipeline
