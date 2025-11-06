@@ -6,6 +6,8 @@ This repository handles all DynamoDB operations for menu items, including:
 - Listing all items for a restaurant
 - Updating existing items
 - Deleting items
+
+All operations are instrumented with OpenTelemetry for observability.
 """
 
 from decimal import Decimal
@@ -14,6 +16,7 @@ from typing import Any
 from boto3.dynamodb.conditions import Key
 
 from src.models.menu_item import MenuItem
+from src.observability.tracing import traced
 
 
 class MenuItemRepository:
@@ -34,6 +37,7 @@ class MenuItemRepository:
         """
         self.table = table
 
+    @traced("create")
     def create(self, item: MenuItem) -> MenuItem:
         """Create a new menu item in DynamoDB.
 
@@ -51,6 +55,7 @@ class MenuItemRepository:
 
         return item
 
+    @traced("get")
     def get(self, restaurant_id: str, item_id: str) -> MenuItem | None:
         """Retrieve a menu item by restaurant_id and item_id.
 
@@ -68,6 +73,7 @@ class MenuItemRepository:
 
         return self._item_from_dynamodb(response["Item"])
 
+    @traced("list_by_restaurant")
     def list_by_restaurant(self, restaurant_id: str) -> list[MenuItem]:
         """List all menu items for a specific restaurant.
 
@@ -82,6 +88,7 @@ class MenuItemRepository:
         items = response.get("Items", [])
         return [self._item_from_dynamodb(item) for item in items]
 
+    @traced("update")
     def update(self, item: MenuItem) -> MenuItem | None:
         """Update an existing menu item.
 
@@ -104,6 +111,7 @@ class MenuItemRepository:
 
         return item
 
+    @traced("delete")
     def delete(self, restaurant_id: str, item_id: str) -> bool:
         """Delete a menu item.
 
