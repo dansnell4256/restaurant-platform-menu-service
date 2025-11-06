@@ -127,9 +127,9 @@ tests/
 - [x] Configure pytest with coverage and testing markers
 - [x] Set up pre-commit hooks for code quality
 - [x] Create basic MenuItem model with tests (TDD)
-- [ ] Implement DynamoDB repository pattern with moto mocking
-- [ ] Add OpenTelemetry instrumentation from first function
-- [ ] Create GitHub Actions CI pipeline
+- [x] Implement DynamoDB repository pattern with moto mocking
+- [x] Add OpenTelemetry instrumentation from first function
+- [x] Create GitHub Actions CI pipeline
 
 **Dependency Management Note**: This project uses `pyproject.toml` (PEP 621) for dependency management - the modern Python standard. No `requirements.txt` files are needed. Install dependencies using `pip install -e ".[dev]"` within a virtual environment.
 
