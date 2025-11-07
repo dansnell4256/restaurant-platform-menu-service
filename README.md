@@ -135,6 +135,117 @@ tests/
 └── e2e/            # Full user journeys
 ```
 
+## API Examples
+
+### Authentication
+
+All API endpoints (except `/health`) require authentication via the `X-API-Key` header:
+
+```bash
+curl http://localhost:8000/menus/rest_001/items \
+  -H "X-API-Key: dev-key-123"
+```
+
+### Create a Menu Item
+
+```bash
+curl -X POST http://localhost:8000/menus/rest_001/items \
+  -H "X-API-Key: dev-key-123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "restaurant_id": "rest_001",
+    "item_id": "item_001",
+    "name": "Margherita Pizza",
+    "description": "Classic pizza with tomato sauce, mozzarella, and fresh basil",
+    "price": "12.99",
+    "category": "pizza",
+    "availability": true,
+    "allergens": ["dairy", "gluten"]
+  }'
+```
+
+### Get a Menu Item
+
+```bash
+curl http://localhost:8000/menus/rest_001/items/item_001 \
+  -H "X-API-Key: dev-key-123"
+```
+
+### List All Menu Items for a Restaurant
+
+```bash
+curl http://localhost:8000/menus/rest_001/items \
+  -H "X-API-Key: dev-key-123"
+```
+
+### Update a Menu Item
+
+```bash
+curl -X PUT http://localhost:8000/menus/rest_001/items/item_001 \
+  -H "X-API-Key: dev-key-123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "restaurant_id": "rest_001",
+    "item_id": "item_001",
+    "name": "Margherita Pizza - Updated",
+    "description": "Classic Neapolitan pizza with San Marzano tomatoes",
+    "price": "14.99",
+    "category": "pizza",
+    "availability": true,
+    "allergens": ["dairy", "gluten"]
+  }'
+```
+
+### Delete a Menu Item
+
+```bash
+curl -X DELETE http://localhost:8000/menus/rest_001/items/item_001 \
+  -H "X-API-Key: dev-key-123"
+```
+
+### Create a Category
+
+```bash
+curl -X POST http://localhost:8000/menus/rest_001/categories \
+  -H "X-API-Key: dev-key-123" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "restaurant_id": "rest_001",
+    "category_id": "cat_001",
+    "name": "Appetizers",
+    "display_order": 1
+  }'
+```
+
+### List Categories
+
+```bash
+curl http://localhost:8000/menus/rest_001/categories \
+  -H "X-API-Key: dev-key-123"
+```
+
+### Restaurant Authorization Examples
+
+If you configure API key permissions (see [LOCALSTACK.md](LOCALSTACK.md#api-key-permissions-optional)), API keys will be restricted to specific restaurants:
+
+```bash
+# Set permissions in .env:
+# API_KEY_PERMISSIONS=partner-key:rest_001;admin-key:*
+
+# Authorized access - SUCCESS (200 OK)
+curl http://localhost:8000/menus/rest_001/items \
+  -H "X-API-Key: partner-key"
+
+# Unauthorized access - FORBIDDEN (403)
+curl http://localhost:8000/menus/rest_002/items \
+  -H "X-API-Key: partner-key"
+# Response: {"detail": "API key is not authorized to access restaurant rest_002"}
+
+# Admin key with wildcard - SUCCESS (200 OK)
+curl http://localhost:8000/menus/rest_999/items \
+  -H "X-API-Key: admin-key"
+```
+
 ## Development Workflow
 1. **Test-Driven Development** - Write tests first
 2. **Incremental Development** - Small, focused changes
