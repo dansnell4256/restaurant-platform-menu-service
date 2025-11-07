@@ -105,7 +105,7 @@ GET    /health                                # Health check endpoint
 6. **Infrastructure**: CDK for AWS resources (Lambda, API Gateway, DynamoDB)
 7. **CI/CD Pipeline**: GitHub Actions for testing and deployment
 
-### File Structure to Create
+### File Structure
 ```
 src/
 ├── models/          # Pydantic models for MenuItem, Category
@@ -113,6 +113,8 @@ src/
 ├── services/        # Business logic layer
 ├── api/            # FastAPI route handlers
 ├── events/         # EventBridge publishing
+├── security/        # Authentication/authorization utilities
+├── observability/   # OpenTelemetry tracing decorators
 └── infrastructure/ # CDK infrastructure code
 
 tests/
@@ -131,6 +133,69 @@ tests/
 - [x] Add OpenTelemetry instrumentation from first function
 - [x] Create GitHub Actions CI pipeline
 
+### Implementation Patterns
+
+#### OpenTelemetry Tracing Pattern
+Use the `@traced` decorator for non-intrusive observability. It works with both sync and async functions.
+
+```python
+from src.observability.tracing import traced
+
+# Sync function (repository layer)
+@traced("operation_name")
+def create(self, item: MenuItem) -> MenuItem:
+    return item
+
+# Async function (API layer)
+@traced("operation_name")
+async def get_items(restaurant_id: str) -> list[MenuItem]:
+    return items
+```
+
+**Tracing Guidelines**:
+- Add `@traced` to ALL functions in repository, service, and API layers
+- Decorator automatically extracts `restaurant_id` and `item_id` from arguments
+- Use descriptive operation names (e.g., "create", "get", "list_by_restaurant")
+- Don't manually create spans - let the decorator handle it
+- Test tracing with examples from each layer (see `tests/component/test_tracing.py`)
+
+#### API Security Pattern
+Use FastAPI dependency injection for API key validation:
+
+```python
+from src.security.api_key_validator import APIKeyValidator
+
+# In create_app function
+async def verify_api_key(x_api_key: str | None = Header()) -> None:
+    if not api_key_validator.is_valid(x_api_key):
+        raise HTTPException(status_code=401, detail="Missing or invalid API key")
+
+@app.get("/endpoint", dependencies=[Depends(verify_api_key)])
+async def endpoint(...):
+    # Business logic
+```
+
+**Security Guidelines**:
+- ALL API endpoints must have `dependencies=[Depends(verify_api_key)]`
+- API keys passed via `X-API-Key` header
+- Validator injected via dependency injection for easy testing
+- Test with mocked validators (see `tests/component/test_api_menu_items.py`)
+
+#### Testing Strategy
+**Don't duplicate tests unnecessarily**. Test the mechanism once, then trust the pattern.
+
+**Example**: For OpenTelemetry tracing
+- ✅ Test decorator works at repository layer (5 examples in `test_tracing.py`)
+- ✅ Test decorator works at API layer (1 example in `test_tracing.py`)
+- ❌ DON'T test tracing for every single endpoint - the decorator is proven
+
+**Test File Organization**:
+- Consolidate related cross-cutting concerns (e.g., all tracing tests in one file)
+- Group by feature/component for functional tests (e.g., `test_api_menu_items.py`)
+- Avoid redundant test files that test the same decorator/pattern repeatedly
+
 **Dependency Management Note**: This project uses `pyproject.toml` (PEP 621) for dependency management - the modern Python standard. No `requirements.txt` files are needed. Install dependencies using `pip install -e ".[dev]"` within a virtual environment.
+
+**Architectural Decisions**: All major design decisions are documented in `DECISIONS.md` using the ADR (Architectural Decision Record) format. When making significant choices, add a new ADR with context, decision, and consequences.
 
 **Remember**: Start with the smallest possible piece (like a MenuItem model) and build incrementally. Write the test first to explain what you're building, then implement just enough to make it pass.
