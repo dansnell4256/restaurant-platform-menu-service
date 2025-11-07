@@ -1,25 +1,34 @@
-"""Component tests for MenuItemRepository OpenTelemetry tracing.
+"""Component tests for OpenTelemetry tracing across application layers.
 
-This test verifies that repository operations are decorated with OpenTelemetry tracing:
-- Each CRUD operation creates a span with @traced decorator
-- Spans include service name and operation identifiers as attributes
+This test verifies that the @traced decorator works consistently across layers:
+- Repository operations create spans with appropriate attributes
+- API endpoints create spans with HTTP context
+- Spans include service name and operation identifiers
 - Tracing is non-intrusive and doesn't clutter business logic
+
+Note: We test examples from each layer to demonstrate the decorator pattern works
+consistently. We don't exhaustively test every endpoint since the decorator itself
+is proven to work.
 """
 
 from collections.abc import Generator
 from decimal import Decimal
 from typing import Any
+from unittest.mock import Mock
 
 import boto3
 import pytest
+from fastapi.testclient import TestClient
 from moto import mock_aws
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import SimpleSpanProcessor
 from opentelemetry.sdk.trace.export.in_memory_span_exporter import InMemorySpanExporter
 
+from src.api.menu_items import create_app
 from src.models.menu_item import MenuItem
 from src.repositories.menu_item_repository import MenuItemRepository
+from src.security.api_key_validator import APIKeyValidator
 
 
 @pytest.fixture(scope="session")
@@ -198,3 +207,65 @@ def test_delete_operation_creates_span(
     assert delete_span.attributes["service.name"] == "menu-svc"
     assert delete_span.attributes["restaurant_id"] == "rest_123"
     assert delete_span.attributes["item_id"] == "item_456"
+
+
+# API Layer Tracing Tests
+# These tests demonstrate the @traced decorator works at the API layer too
+
+
+@pytest.fixture
+def mock_repository() -> Mock:
+    """Create a mock MenuItemRepository for API testing."""
+    return Mock()
+
+
+@pytest.fixture
+def api_key_validator() -> APIKeyValidator:
+    """Create API key validator with test keys."""
+    return APIKeyValidator(valid_keys={"test-key-123"})
+
+
+@pytest.fixture
+def api_client(
+    mock_repository: Mock,
+    api_key_validator: APIKeyValidator,
+) -> Generator[TestClient, None, None]:
+    """Create FastAPI test client with mocked dependencies."""
+    app = create_app(repository=mock_repository, api_key_validator=api_key_validator)
+    with TestClient(app) as test_client:
+        yield test_client
+
+
+@pytest.mark.component
+def test_api_get_items_creates_span(
+    api_client: TestClient,
+    mock_repository: Mock,
+    tracer_provider: TracerProvider,
+) -> None:
+    """Test that API endpoint creates tracing span with decorator.
+
+    This demonstrates the @traced decorator works at the API layer,
+    just like it does at the repository layer.
+    """
+    # Set up span exporter for this test
+    span_exporter = InMemorySpanExporter()
+    tracer_provider.add_span_processor(SimpleSpanProcessor(span_exporter))
+
+    # Arrange
+    mock_repository.list_by_restaurant.return_value = []
+
+    # Act
+    response = api_client.get(
+        "/restaurants/rest_123/items",
+        headers={"X-API-Key": "test-key-123"},
+    )
+
+    # Assert
+    assert response.status_code == 200
+
+    # Verify API span was created
+    spans = span_exporter.get_finished_spans()
+    api_span = next((s for s in spans if "get_items" in s.name), None)
+    assert api_span is not None
+    assert api_span.attributes["service.name"] == "menu-svc"
+    assert api_span.attributes["restaurant_id"] == "rest_123"

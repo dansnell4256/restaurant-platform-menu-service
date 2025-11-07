@@ -11,6 +11,7 @@ from typing import Annotated
 from fastapi import Depends, FastAPI, Header, HTTPException
 
 from src.models.menu_item import MenuItem
+from src.observability.tracing import traced
 from src.repositories.menu_item_repository import MenuItemRepository
 from src.security.api_key_validator import APIKeyValidator
 
@@ -51,6 +52,7 @@ def create_app(
         response_model=list[MenuItem],
         dependencies=[Depends(verify_api_key)],
     )
+    @traced("get_items")
     async def get_items(restaurant_id: str) -> list[MenuItem]:
         """Get all menu items for a restaurant.
 

@@ -119,7 +119,7 @@ module = "boto3.*"
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = "tests.component.test_menu_item_repository_tracing"
+module = "tests.component.test_tracing"
 disable_error_code = ["index"]
 
 [[tool.mypy.overrides]]
