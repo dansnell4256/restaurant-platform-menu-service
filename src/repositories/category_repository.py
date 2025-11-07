@@ -10,7 +10,7 @@ from typing import Any
 
 from boto3.dynamodb.conditions import Key
 
-from src.models.category import Category
+from src.models.category_model import Category
 from src.observability.tracing import traced
 
 

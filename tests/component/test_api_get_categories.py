@@ -15,7 +15,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.api.categories import create_app
-from src.models.category import Category
+from src.models.category_model import Category
 from src.security.api_key_validator import APIKeyValidator
 
 

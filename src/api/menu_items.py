@@ -11,7 +11,7 @@ from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException, status
 
-from src.models.menu_item import MenuItem
+from src.models.menu_item_model import MenuItem
 from src.observability.tracing import traced
 from src.repositories.menu_item_repository import MenuItemRepository
 from src.security.api_key_validator import APIKeyValidator

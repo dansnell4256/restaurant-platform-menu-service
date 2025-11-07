@@ -15,7 +15,7 @@ from typing import Any
 
 from boto3.dynamodb.conditions import Key
 
-from src.models.menu_item import MenuItem
+from src.models.menu_item_model import MenuItem
 from src.observability.tracing import traced
 
 

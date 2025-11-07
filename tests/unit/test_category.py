@@ -10,7 +10,7 @@ Tests the Category pydantic model for menu organization including:
 import pytest
 from pydantic import ValidationError
 
-from src.models.category import Category
+from src.models.category_model import Category
 
 
 @pytest.mark.unit

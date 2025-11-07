@@ -17,7 +17,7 @@ import boto3
 import pytest
 from moto import mock_aws
 
-from src.models.menu_item import MenuItem
+from src.models.menu_item_model import MenuItem
 from src.repositories.menu_item_repository import MenuItemRepository
 
 

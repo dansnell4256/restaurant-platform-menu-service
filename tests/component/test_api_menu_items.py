@@ -16,7 +16,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.api.menu_items import create_app
-from src.models.menu_item import MenuItem
+from src.models.menu_item_model import MenuItem
 from src.security.api_key_validator import APIKeyValidator
 
 

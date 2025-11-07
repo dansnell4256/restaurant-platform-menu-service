@@ -10,7 +10,7 @@ import boto3
 import pytest
 from moto import mock_aws
 
-from src.models.category import Category
+from src.models.category_model import Category
 from src.repositories.category_repository import CategoryRepository
 
 

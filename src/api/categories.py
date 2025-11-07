@@ -10,7 +10,7 @@ from typing import Annotated
 
 from fastapi import Depends, FastAPI, Header, HTTPException
 
-from src.models.category import Category
+from src.models.category_model import Category
 from src.observability.tracing import traced
 from src.repositories.category_repository import CategoryRepository
 from src.security.api_key_validator import APIKeyValidator
