@@ -256,7 +256,7 @@ def test_api_get_items_creates_span(
 
     # Act
     response = api_client.get(
-        "/restaurants/rest_123/items",
+        "/menus/rest_123/items",
         headers={"X-API-Key": "test-key-123"},
     )
 

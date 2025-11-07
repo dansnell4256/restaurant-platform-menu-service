@@ -1,7 +1,7 @@
 """Component tests for POST menu item API endpoint.
 
 This test verifies the FastAPI endpoint for creating menu items:
-- POST /restaurants/{restaurant_id}/items - Create a new menu item
+- POST /menus/{restaurant_id}/items - Create a new menu item
 - Requires X-API-Key header for authentication
 - Returns 201 with created item on success
 - Returns 401 if API key is missing or invalid
@@ -63,7 +63,7 @@ def test_post_item_without_api_key_returns_401(
     }
 
     # Act - No X-API-Key header
-    response = client.post("/restaurants/rest_123/items", json=item_data)
+    response = client.post("/menus/rest_123/items", json=item_data)
 
     # Assert
     assert response.status_code == 401
@@ -92,7 +92,7 @@ def test_post_item_with_invalid_api_key_returns_401(
 
     # Act - Invalid API key
     response = client.post(
-        "/restaurants/rest_123/items",
+        "/menus/rest_123/items",
         json=item_data,
         headers={"X-API-Key": "invalid-key"},
     )
@@ -136,7 +136,7 @@ def test_post_item_creates_new_item(
 
     # Act - Valid API key
     response = client.post(
-        "/restaurants/rest_123/items",
+        "/menus/rest_123/items",
         json=item_data,
         headers={"X-API-Key": "test-key-123"},
     )
@@ -182,7 +182,7 @@ def test_post_item_validates_restaurant_id_matches_path(
 
     # Act - Valid API key
     response = client.post(
-        "/restaurants/rest_123/items",
+        "/menus/rest_123/items",
         json=item_data,
         headers={"X-API-Key": "test-key-123"},
     )
@@ -213,7 +213,7 @@ def test_post_item_with_incomplete_payload_returns_422(
 
     # Act - Valid API key but incomplete data
     response = client.post(
-        "/restaurants/rest_123/items",
+        "/menus/rest_123/items",
         json=item_data,
         headers={"X-API-Key": "test-key-123"},
     )

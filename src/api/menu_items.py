@@ -1,8 +1,8 @@
 """FastAPI endpoints for menu item operations.
 
 This module provides REST API endpoints for managing restaurant menu items:
-- GET /restaurants/{restaurant_id}/items - List all items for a restaurant
-- POST /restaurants/{restaurant_id}/items - Create a new menu item
+- GET /menus/{restaurant_id}/items - List all items for a restaurant
+- POST /menus/{restaurant_id}/items - Create a new menu item
 
 All endpoints require API key authentication via X-API-Key header.
 """
@@ -49,7 +49,7 @@ def create_app(
             raise HTTPException(status_code=401, detail="Missing or invalid API key")
 
     @app.get(
-        "/restaurants/{restaurant_id}/items",
+        "/menus/{restaurant_id}/items",
         response_model=list[MenuItem],
         dependencies=[Depends(verify_api_key)],
     )
@@ -66,7 +66,7 @@ def create_app(
         return repository.list_by_restaurant(restaurant_id)
 
     @app.post(
-        "/restaurants/{restaurant_id}/items",
+        "/menus/{restaurant_id}/items",
         response_model=MenuItem,
         status_code=status.HTTP_201_CREATED,
         dependencies=[Depends(verify_api_key)],

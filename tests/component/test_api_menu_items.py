@@ -1,7 +1,7 @@
 """Component tests for menu items API endpoints.
 
 This test verifies the FastAPI endpoints for menu item operations:
-- GET /restaurants/{restaurant_id}/items - List all items for a restaurant
+- GET /menus/{restaurant_id}/items - List all items for a restaurant
 - Requires X-API-Key header for authentication
 - Returns 200 with list of items (empty list if none exist)
 - Returns 401 if API key is missing or invalid
@@ -48,9 +48,9 @@ def test_get_items_without_api_key_returns_401(
     client: TestClient,
     mock_repository: Mock,
 ) -> None:
-    """Test GET /restaurants/{restaurant_id}/items returns 401 without API key."""
+    """Test GET /menus/{restaurant_id}/items returns 401 without API key."""
     # Act - No X-API-Key header
-    response = client.get("/restaurants/rest_123/items")
+    response = client.get("/menus/rest_123/items")
 
     # Assert
     assert response.status_code == 401
@@ -64,10 +64,10 @@ def test_get_items_with_invalid_api_key_returns_401(
     client: TestClient,
     mock_repository: Mock,
 ) -> None:
-    """Test GET /restaurants/{restaurant_id}/items returns 401 with invalid API key."""
+    """Test GET /menus/{restaurant_id}/items returns 401 with invalid API key."""
     # Act - Invalid API key
     response = client.get(
-        "/restaurants/rest_123/items",
+        "/menus/rest_123/items",
         headers={"X-API-Key": "invalid-key"},
     )
 
@@ -83,13 +83,13 @@ def test_get_items_returns_empty_list_when_no_items(
     client: TestClient,
     mock_repository: Mock,
 ) -> None:
-    """Test GET /restaurants/{restaurant_id}/items returns empty list when no items exist."""
+    """Test GET /menus/{restaurant_id}/items returns empty list when no items exist."""
     # Arrange
     mock_repository.list_by_restaurant.return_value = []
 
     # Act - Valid API key
     response = client.get(
-        "/restaurants/rest_123/items",
+        "/menus/rest_123/items",
         headers={"X-API-Key": "test-key-123"},
     )
 
@@ -104,7 +104,7 @@ def test_get_items_returns_list_of_items(
     client: TestClient,
     mock_repository: Mock,
 ) -> None:
-    """Test GET /restaurants/{restaurant_id}/items returns list of items."""
+    """Test GET /menus/{restaurant_id}/items returns list of items."""
     # Arrange
     items = [
         MenuItem(
@@ -132,7 +132,7 @@ def test_get_items_returns_list_of_items(
 
     # Act - Valid API key
     response = client.get(
-        "/restaurants/rest_123/items",
+        "/menus/rest_123/items",
         headers={"X-API-Key": "test-key-123"},
     )
 
@@ -170,7 +170,7 @@ def test_get_items_with_different_restaurant_id(
 
     # Act - Valid API key
     response = client.get(
-        "/restaurants/rest_456/items",
+        "/menus/rest_456/items",
         headers={"X-API-Key": "test-key-456"},
     )
 
@@ -191,7 +191,7 @@ def test_get_items_with_alternate_valid_api_key(
 
     # Act - Different valid API key
     response = client.get(
-        "/restaurants/rest_123/items",
+        "/menus/rest_123/items",
         headers={"X-API-Key": "test-key-456"},
     )
 
