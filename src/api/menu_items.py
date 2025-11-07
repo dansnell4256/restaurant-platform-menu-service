@@ -2,13 +2,14 @@
 
 This module provides REST API endpoints for managing restaurant menu items:
 - GET /restaurants/{restaurant_id}/items - List all items for a restaurant
+- POST /restaurants/{restaurant_id}/items - Create a new menu item
 
 All endpoints require API key authentication via X-API-Key header.
 """
 
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, status
 
 from src.models.menu_item import MenuItem
 from src.observability.tracing import traced
@@ -63,5 +64,34 @@ def create_app(
             List of menu items (empty list if none found)
         """
         return repository.list_by_restaurant(restaurant_id)
+
+    @app.post(
+        "/restaurants/{restaurant_id}/items",
+        response_model=MenuItem,
+        status_code=status.HTTP_201_CREATED,
+        dependencies=[Depends(verify_api_key)],
+    )
+    @traced("create_item")
+    async def create_item(restaurant_id: str, item: MenuItem) -> MenuItem:
+        """Create a new menu item for a restaurant.
+
+        Args:
+            restaurant_id: The restaurant identifier from URL path
+            item: The menu item to create
+
+        Returns:
+            The created menu item
+
+        Raises:
+            HTTPException: 400 if restaurant_id in body doesn't match path
+        """
+        # Validate restaurant_id in body matches path parameter
+        if item.restaurant_id != restaurant_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"restaurant_id in body ({item.restaurant_id}) does not match path parameter ({restaurant_id})",
+            )
+
+        return repository.create(item)
 
     return app
