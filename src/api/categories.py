@@ -2,13 +2,14 @@
 
 This module provides REST API endpoints for managing menu categories:
 - GET /menus/{restaurant_id}/categories - List all categories for a restaurant
+- POST /menus/{restaurant_id}/categories - Create a new category
 
 All endpoints require API key authentication via X-API-Key header.
 """
 
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, status
 
 from src.models.category_model import Category
 from src.observability.tracing import traced
@@ -63,5 +64,34 @@ def create_app(
             List of categories sorted by display_order (empty list if none found)
         """
         return repository.list_by_restaurant(restaurant_id)
+
+    @app.post(
+        "/menus/{restaurant_id}/categories",
+        response_model=Category,
+        status_code=status.HTTP_201_CREATED,
+        dependencies=[Depends(verify_api_key)],
+    )
+    @traced("create_category")
+    async def create_category(restaurant_id: str, category: Category) -> Category:
+        """Create a new category for a restaurant.
+
+        Args:
+            restaurant_id: The restaurant identifier from URL path
+            category: The category to create
+
+        Returns:
+            The created category
+
+        Raises:
+            HTTPException: 400 if restaurant_id in body doesn't match path
+        """
+        # Validate restaurant_id in body matches path parameter
+        if category.restaurant_id != restaurant_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"restaurant_id in body ({category.restaurant_id}) does not match path parameter ({restaurant_id})",
+            )
+
+        return repository.create(category)
 
     return app

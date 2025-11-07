@@ -176,3 +176,97 @@ def test_list_categories_with_parent_category(
 
     assert parent.parent_category is None
     assert child.parent_category == "cat_parent"
+
+
+@pytest.mark.component
+def test_create_category(
+    repository: CategoryRepository,
+    dynamodb_table: Any,
+) -> None:
+    """Test creating a new category."""
+    # Arrange
+    category = Category(
+        restaurant_id="rest_123",
+        category_id="cat_1",
+        name="Appetizers",
+        display_order=1,
+        parent_category=None,
+    )
+
+    # Act
+    result = repository.create(category)
+
+    # Assert
+    assert result.restaurant_id == "rest_123"
+    assert result.category_id == "cat_1"
+    assert result.name == "Appetizers"
+    assert result.display_order == 1
+    assert result.parent_category is None
+
+    # Verify it was actually stored in DynamoDB
+    response = dynamodb_table.get_item(Key={"restaurant_id": "rest_123", "category_id": "cat_1"})
+    assert "Item" in response
+    assert response["Item"]["name"] == "Appetizers"
+
+
+@pytest.mark.component
+def test_create_category_with_parent(
+    repository: CategoryRepository,
+    dynamodb_table: Any,
+) -> None:
+    """Test creating a category with a parent_category."""
+    # Arrange
+    category = Category(
+        restaurant_id="rest_123",
+        category_id="cat_2",
+        name="Vegetarian Pasta",
+        display_order=5,
+        parent_category="cat_pasta",
+    )
+
+    # Act
+    result = repository.create(category)
+
+    # Assert
+    assert result.parent_category == "cat_pasta"
+
+    # Verify it was stored with parent_category
+    response = dynamodb_table.get_item(Key={"restaurant_id": "rest_123", "category_id": "cat_2"})
+    assert response["Item"]["parent_category"] == "cat_pasta"
+
+
+@pytest.mark.component
+def test_create_category_preserves_all_fields(
+    repository: CategoryRepository,
+    dynamodb_table: Any,
+) -> None:
+    """Test that create preserves all category fields."""
+    # Arrange
+    category = Category(
+        restaurant_id="rest_456",
+        category_id="cat_desserts",
+        name="Desserts",
+        display_order=10,
+        parent_category="cat_sweets",
+    )
+
+    # Act
+    result = repository.create(category)
+
+    # Assert - Check returned object
+    assert result.restaurant_id == "rest_456"
+    assert result.category_id == "cat_desserts"
+    assert result.name == "Desserts"
+    assert result.display_order == 10
+    assert result.parent_category == "cat_sweets"
+
+    # Assert - Check stored in DynamoDB
+    response = dynamodb_table.get_item(
+        Key={"restaurant_id": "rest_456", "category_id": "cat_desserts"}
+    )
+    stored_item = response["Item"]
+    assert stored_item["restaurant_id"] == "rest_456"
+    assert stored_item["category_id"] == "cat_desserts"
+    assert stored_item["name"] == "Desserts"
+    assert stored_item["display_order"] == 10
+    assert stored_item["parent_category"] == "cat_sweets"

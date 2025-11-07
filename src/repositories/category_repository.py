@@ -32,6 +32,22 @@ class CategoryRepository:
         """
         self.table = table
 
+    @traced("create")
+    def create(self, category: Category) -> Category:
+        """Create a new category in DynamoDB.
+
+        Args:
+            category: The Category to create
+
+        Returns:
+            The created Category
+        """
+        category_dict = category.model_dump()
+
+        self.table.put_item(Item=category_dict)
+
+        return category
+
     @traced("list_by_restaurant")
     def list_by_restaurant(self, restaurant_id: str) -> list[Category]:
         """List all categories for a specific restaurant, sorted by display_order.
