@@ -40,6 +40,55 @@ pip install -e ".[dev]"
 pre-commit install
 ```
 
+### Running Locally
+
+```bash
+# Install uvicorn if not already installed
+pip install uvicorn
+
+# Option 1: Run with uvicorn directly (recommended for development)
+uvicorn src.main:app --reload --port 8000
+
+# Option 2: Run with Python
+python -m src.main
+
+# The API will be available at:
+# - API Documentation: http://localhost:8000/api/v1/docs
+# - Health Check: http://localhost:8000/api/v1/health
+# - Menu Items: http://localhost:8000/api/v1/menus/{restaurant_id}/items
+# - Categories: http://localhost:8000/api/v1/menus/{restaurant_id}/categories
+```
+
+#### Environment Configuration
+
+Copy `.env.example` to `.env` and configure:
+
+```bash
+cp .env.example .env
+```
+
+Key environment variables:
+- `API_KEYS` - Comma-separated list of valid API keys (default: `dev-key-123,test-key-456`)
+- `DYNAMODB_ENDPOINT` - For local DynamoDB (leave unset for AWS)
+- `AWS_REGION` - AWS region (default: `us-east-1`)
+- `MENU_ITEMS_TABLE` - DynamoDB table name for menu items
+- `CATEGORIES_TABLE` - DynamoDB table name for categories
+
+**Note:** For local development, you need a DynamoDB backend. **We recommend LocalStack** (option 1):
+
+1. **LocalStack (Recommended)** - Full local AWS environment
+   ```bash
+   docker compose up -d
+   ./scripts/init-localstack.sh
+   ```
+   See [LOCALSTACK.md](LOCALSTACK.md) for complete setup guide.
+
+2. **Local DynamoDB** - Run DynamoDB locally via Docker: `docker run -p 8000:8000 amazon/dynamodb-local`
+
+3. **Real AWS** - Point to actual DynamoDB tables (requires AWS credentials)
+
+4. **Moto** - Used automatically in tests, not ideal for interactive development
+
 ### Development Commands
 
 ```bash

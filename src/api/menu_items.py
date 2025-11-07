@@ -39,22 +39,44 @@ def create_app(
         version="0.1.0",
     )
 
-    async def verify_api_key(x_api_key: Annotated[str | None, Header()] = None) -> None:
+    async def verify_api_key(x_api_key: Annotated[str | None, Header()] = None) -> str:
         """Verify API key from X-API-Key header.
 
         Args:
             x_api_key: API key from request header
+
+        Returns:
+            The validated API key
 
         Raises:
             HTTPException: 401 if API key is missing or invalid
         """
         if not api_key_validator.is_valid(x_api_key):
             raise HTTPException(status_code=401, detail="Missing or invalid API key")
+        return x_api_key  # type: ignore[return-value]
+
+    def verify_restaurant_access(
+        restaurant_id: str, api_key: Annotated[str, Depends(verify_api_key)]
+    ) -> None:
+        """Verify API key has access to the restaurant.
+
+        Args:
+            restaurant_id: The restaurant identifier from URL path
+            api_key: The validated API key from verify_api_key dependency
+
+        Raises:
+            HTTPException: 403 if API key doesn't have access to restaurant
+        """
+        if not api_key_validator.can_access_restaurant(api_key, restaurant_id):
+            raise HTTPException(
+                status_code=403,
+                detail=f"API key is not authorized to access restaurant {restaurant_id}",
+            )
 
     @app.get(
         "/menus/{restaurant_id}/items",
         response_model=list[MenuItem],
-        dependencies=[Depends(verify_api_key)],
+        dependencies=[Depends(verify_restaurant_access)],
     )
     @traced("get_items")
     async def get_items(restaurant_id: str) -> list[MenuItem]:
@@ -71,7 +93,7 @@ def create_app(
     @app.get(
         "/menus/{restaurant_id}/items/{item_id}",
         response_model=MenuItem,
-        dependencies=[Depends(verify_api_key)],
+        dependencies=[Depends(verify_restaurant_access)],
     )
     @traced("get_item")
     async def get_item(restaurant_id: str, item_id: str) -> MenuItem:
@@ -99,7 +121,7 @@ def create_app(
         "/menus/{restaurant_id}/items",
         response_model=MenuItem,
         status_code=status.HTTP_201_CREATED,
-        dependencies=[Depends(verify_api_key)],
+        dependencies=[Depends(verify_restaurant_access)],
     )
     @traced("create_item")
     async def create_item(restaurant_id: str, item: MenuItem) -> MenuItem:
@@ -127,7 +149,7 @@ def create_app(
     @app.put(
         "/menus/{restaurant_id}/items/{item_id}",
         response_model=MenuItem,
-        dependencies=[Depends(verify_api_key)],
+        dependencies=[Depends(verify_restaurant_access)],
     )
     @traced("update_item")
     async def update_item(restaurant_id: str, item_id: str, item: MenuItem) -> MenuItem:
@@ -170,7 +192,7 @@ def create_app(
     @app.delete(
         "/menus/{restaurant_id}/items/{item_id}",
         status_code=status.HTTP_204_NO_CONTENT,
-        dependencies=[Depends(verify_api_key)],
+        dependencies=[Depends(verify_restaurant_access)],
     )
     @traced("delete_item")
     async def delete_item(restaurant_id: str, item_id: str) -> None:
