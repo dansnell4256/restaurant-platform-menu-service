@@ -20,6 +20,7 @@ import os
 from typing import Annotated
 
 import boto3
+from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Header, HTTPException, status
 
 from src.models.category_model import Category
@@ -28,6 +29,9 @@ from src.observability.tracing import traced
 from src.repositories.category_repository import CategoryRepository
 from src.repositories.menu_item_repository import MenuItemRepository
 from src.security.api_key_validator import APIKeyValidator
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Global repositories and validator (initialized on startup)
 menu_item_repository: MenuItemRepository
@@ -48,7 +52,13 @@ def get_dynamodb_resource() -> boto3.resources.base.ServiceResource:
     region = os.getenv("AWS_REGION", "us-east-1")
 
     if endpoint_url:
-        # Local DynamoDB (docker or localstack)
+        # Local DynamoDB (docker, localstack, or moto)
+        # Set dummy credentials for local development (required by boto3)
+        if "AWS_ACCESS_KEY_ID" not in os.environ:
+            os.environ["AWS_ACCESS_KEY_ID"] = "testing"
+        if "AWS_SECRET_ACCESS_KEY" not in os.environ:
+            os.environ["AWS_SECRET_ACCESS_KEY"] = "testing"
+
         return boto3.resource("dynamodb", endpoint_url=endpoint_url, region_name=region)
     else:
         # AWS DynamoDB

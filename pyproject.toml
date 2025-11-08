@@ -12,6 +12,7 @@ dependencies = [
     "opentelemetry-instrumentation-fastapi>=0.42b0",
     "opentelemetry-instrumentation-boto3sqs>=0.42b0",
     "aws-xray-sdk>=2.12.0",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -128,6 +129,10 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "httpx.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "dotenv.*"
 ignore_missing_imports = true
 
 [tool.coverage.run]
