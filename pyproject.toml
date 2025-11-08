@@ -140,6 +140,7 @@ source = ["src"]
 omit = [
     "*/tests/*",
     "*/test_*.py",
+    "*/scripts/*",
 ]
 
 [tool.coverage.report]
